@@ -88,5 +88,26 @@ El comando ***docker run*** comprueba primero si tienes la imagen guardada en tu
 
 ## Docker Stop
 
-***docker stop***
+***docker stop*** -> Sirve para detener el contenedor.
 
+> docker stop nombre_del_contenedor
+
+### Ejemplo:
+
+`docker stop mi-contenedor`
+
+## Docker Exec
+
+***docker exec*** -> Sirve para inspeccionar el interior de un contenedor.
+
+***"-i"*** -> **(Interactive)**: Mantiene la entrada estándar (STDIN) abierta para que puedas escribir comandos.
+
+***"-t"*** -> **(TTY)**: Asigna una terminal virtual para que veas el prompt (como / # o root@...) y los colores en pantalla.
+
+***"sh"*** -> Ejecuta el intérprete de comandos Shell, también puese ser Bash (la consola de Linux).
+
+> docker exec [OPCIONES] NOMBRE_O_ID_DEL_CONTENEDOR COMANDO
+
+### Ejemplo:
+
+`docker exec -it mi-contenedor bash`
