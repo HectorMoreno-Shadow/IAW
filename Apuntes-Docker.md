@@ -111,3 +111,7 @@ El comando ***docker run*** comprueba primero si tienes la imagen guardada en tu
 ### Ejemplo:
 
 `docker exec -it mi-contenedor bash`
+
+## Nginx
+
+Nginx permite tener un control con las conexiones simultaneas que apache no nos permite. Resolver el reto de 10.000 conexiones concurrentes.
