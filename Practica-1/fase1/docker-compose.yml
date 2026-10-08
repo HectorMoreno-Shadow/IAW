@@ -1,0 +1,12 @@
+version: '3.8'
+
+services:
+  servidor_hector_apache:
+    build: .
+    container_name: contenedor_nimbusdocs
+    ports:
+      - "8080:80"
+    volumes:
+      - ./web_marca1_i:/usr/local/apache2/htdocs/marca1
+      - ./web_marca2_p:/usr/local/apache2/htdocs/marca2
+    restart: always

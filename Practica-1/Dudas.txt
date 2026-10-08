@@ -1,0 +1,11 @@
+- Para la fase 1, se debe hacer lo mismo que en la practica 0?, es decir, 
+descargar una imagen de apache y lanzar un contenedor, 
+o construir una imagen basada en apache. Y que versión de apache
+
+- Debemos de crear un .yml para las 2 marcas como en la practica 0
+
+- No entiendo lo de la marca interna y pública
+
+- No entiendo -> La marca "interna" (la que decidáis que no debe ser pública) tiene que proteger un
+fichero sensible simulado — con nombre propio, no wp-config.php — y desactivar el
+listado de directorios en toda su ruta.
