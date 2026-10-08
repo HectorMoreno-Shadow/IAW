@@ -9,3 +9,5 @@ o construir una imagen basada en apache. Y que versión de apache
 - No entiendo -> La marca "interna" (la que decidáis que no debe ser pública) tiene que proteger un
 fichero sensible simulado — con nombre propio, no wp-config.php — y desactivar el
 listado de directorios en toda su ruta.
+
+- Para el archivo sensible simulado, creamos un archivo .htaccess o directamente ponemos la regla dentro del .conf del vhost.

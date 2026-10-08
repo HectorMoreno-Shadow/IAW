@@ -147,3 +147,5 @@ services:
 `ErrorLog "logs/marca1_error.log"` -> Archivo donde se guardarán los registros de errores de la Marca 1.
 
 `CustomLog "logs/marca1_access.log" combined` -> Archivo donde se registrarán los accesos con éxito/fracaso usando el formato combined.
+
+`AllowOverride All` -> Esto hace que apache lea los archivos del directoria y así lea el archivo .htaccess
