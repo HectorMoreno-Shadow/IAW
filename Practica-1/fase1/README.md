@@ -107,11 +107,13 @@ services:
 ```
 <VirtualHost *:80>
     ServerName marca1-i.practica
+    ServerAlias www.marca1-i.practica
     DocumentRoot "/usr/local/apache2/htdocs/marca1"
 
     <Directory "/usr/local/apache2/htdocs/marca1">
-        Options -Indexes +FollowSymLinks
+        Options -Indexes
         Require all granted
+        AllowOverride All
     </Directory>
 
     ErrorLog "logs/marca1_error.log"
@@ -138,7 +140,7 @@ services:
 
 `<Directory "/usr/local/apache2/htdocs/marca1">` -> Aplica la configuración de permisos a la carpeta del sitio web.
 
-`Options -Indexes +FollowSymLinks` -> **-Indexes** desactiva el listado de archivos si no hay index.html (seguridad), y **+FollowSymLinks** permite seguir enlaces simbólicos.
+`Options -Indexes` -> **-Indexes** desactiva el listado de archivos si no hay index.html (seguridad)
 
 `Require all granted` -> Permite el acceso público a todo el contenido general de esta web.
 
