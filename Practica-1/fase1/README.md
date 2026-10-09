@@ -6,12 +6,12 @@
 FROM httpd:2.4
 
 COPY ./vhosts/00-default.conf /usr/local/apache2/conf/00-default.conf
-COPY ./vhosts/marca1.conf /usr/local/apache2/conf/marca1.conf
-COPY ./vhosts/marca2.conf /usr/local/apache2/conf/marca2.conf
+COPY ./vhosts/marca1-i.conf /usr/local/apache2/conf/marca1-i.conf
+COPY ./vhosts/marca2-p.conf /usr/local/apache2/conf/marca2-p.conf
 
 RUN echo "Include conf/00-default.conf" >> /usr/local/apache2/conf/httpd.conf
-RUN echo "Include conf/marca1.conf" >> /usr/local/apache2/conf/httpd.conf
-RUN echo "Include conf/marca2.conf" >> /usr/local/apache2/conf/httpd.conf
+RUN echo "Include conf/marca1-i.conf" >> /usr/local/apache2/conf/httpd.conf
+RUN echo "Include conf/marca2-p.conf" >> /usr/local/apache2/conf/httpd.conf
 
 EXPOSE 80
 
@@ -22,9 +22,9 @@ CMD ["httpd", "-D", "FOREGROUND"]
 
 `COPY ./vhosts/00-default.conf /usr/local/apache2/conf/00-default.conf`: Copia la regla por defecto desde nuestra máquina local al directorio de configuración interno de Apache dentro del contenedor.
 
-`COPY ./vhosts/marca1.conf /usr/local/apache2/conf/marca1.conf`: Copia la configuración del Virtual Host de **Marca 1** al contenedor.
+`COPY ./vhosts/marca1-i.conf /usr/local/apache2/conf/marca1.conf`: Copia la configuración del Virtual Host de **Marca 1** al contenedor.
 
-`COPY ./vhosts/marca2.conf /usr/local/apache2/conf/marca2.conf`: Copia la configuración del Virtual Host de **Marca 2** al contenedor.
+`COPY ./vhosts/marca2-p.conf /usr/local/apache2/conf/marca2.conf`: Copia la configuración del Virtual Host de **Marca 2** al contenedor.
 
 `RUN echo "Include conf/00-default.conf" >> /usr/local/apache2/conf/httpd.conf`: Añade al final del archivo principal de Apache (`httpd.conf`) la directiva para incluir la regla por defecto.
 
@@ -50,7 +50,7 @@ services:
     volumes:
       - ./web_marca1_i:/usr/local/apache2/htdocs/marca1
       - ./web_marca2_p:/usr/local/apache2/htdocs/marca2
-    restart: unless-stopped
+    restart: always
 ```
 
 `version: '3.8'`: Especifica la versión del formato del archivo de Docker Compose.
@@ -127,7 +127,7 @@ services:
     DocumentRoot "/usr/local/apache2/htdocs/marca2"
 
     <Directory "/usr/local/apache2/htdocs/marca2">
-        Options -Indexes +FollowSymLinks
+        Options -Indexes
         Require all granted
     </Directory>
 
