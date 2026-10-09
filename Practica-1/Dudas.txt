@@ -11,3 +11,7 @@ fichero sensible simulado — con nombre propio, no wp-config.php — y desactiv
 listado de directorios en toda su ruta.
 
 - Para el archivo sensible simulado, creamos un archivo .htaccess o directamente ponemos la regla dentro del .conf del vhost.
+
+- No sé como hacer: Un dominio que no coincida con ningún Virtual Host debe caer en un comportamiento
+controlado por vosotros (no el primero al azar) — explicad en el README por qué pasa
+eso.
