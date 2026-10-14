@@ -11,4 +11,3 @@ RUN echo "Include conf/marca2-p.conf" >> /usr/local/apache2/conf/httpd.conf
 EXPOSE 80
 
 CMD ["httpd", "-D", "FOREGROUND"]
-
