@@ -178,3 +178,141 @@ Con la regla  `<Location "/"> Require all denied </Location>` cualquier dominio 
 ```
 Esto es un archivo sensible simulado
 ```
+
+## Comprobación con curl
+
+### Marca1-i.practtica
+
+`curl -i -H "Host: marca1-i.practica" http://localhost:8080/`
+
+**Resultado:**
+
+```
+HTTP/1.1 200 OK
+Date: Thu, 15 Oct 2026 10:03:00 GMT
+Server: Apache/2.4.69 (Unix)
+Last-Modified: Wed, 07 Oct 2026 09:58:33 GMT
+ETag: "f1-65d3d28724fa5"
+Accept-Ranges: bytes
+Content-Length: 241
+Content-Type: text/html
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Marca 1</title>
+</head>
+<body>
+    
+    <h1>Esta es la web marca 1</h1>
+
+</body>
+</html>
+```
+### Marca2-p.practtica
+
+`curl -i -H "Host: marca2-p.practica" http://localhost:8080/`
+
+**Resultado:**
+
+```
+HTTP/1.1 200 OK
+Date: Thu, 15 Oct 2026 10:02:16 GMT
+Server: Apache/2.4.69 (Unix)
+Last-Modified: Wed, 07 Oct 2026 09:58:12 GMT
+ETag: "f1-65d3d273d55e8"
+Accept-Ranges: bytes
+Content-Length: 241
+Content-Type: text/html
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Marca 2</title>
+</head>
+<body>
+
+    <h1>Esta es la web marca 2</h1>
+    
+</body>
+</html>
+```
+### wwww.marca1-i.practica (prueba del ServerAlias)
+
+`curl -i -H "Host: www.marca1-i.practica" http://localhost:8080/`
+
+**Resultado:**
+
+```
+HTTP/1.1 200 OK
+Date: Thu, 15 Oct 2026 10:04:39 GMT
+Server: Apache/2.4.69 (Unix)
+Last-Modified: Wed, 07 Oct 2026 09:58:33 GMT
+ETag: "f1-65d3d28724fa5"
+Accept-Ranges: bytes
+Content-Length: 241
+Content-Type: text/html
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Marca 1</title>
+</head>
+<body>
+    
+    <h1>Esta es la web marca 1</h1>
+
+</body>
+</html>
+```
+
+### Fichero sensible (sensible.txt)
+
+`curl -i -H "Host: marca1-i.practica" http://localhost:8080/sensible.txt`
+
+**Resultado:**
+
+```
+HTTP/1.1 403 Forbidden
+Date: Thu, 15 Oct 2026 10:08:02 GMT
+Server: Apache/2.4.69 (Unix)
+Content-Length: 239
+Content-Type: text/html; charset=iso-8859-1
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html><head>
+<title>403 Forbidden</title>
+</head><body>
+<h1>Forbidden</h1>
+<p>You don't have permission to access this resource.</p>
+</body></html>
+
+```
+
+### Dominio desconocido
+
+`curl -i -H "Host: otro.dominio" http://localhost:8080/`
+
+**Resultado:**
+
+```
+HTTP/1.1 403 Forbidden
+Date: Thu, 15 Oct 2026 10:09:43 GMT
+Server: Apache/2.4.69 (Unix)
+Content-Length: 239
+Content-Type: text/html; charset=iso-8859-1
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html><head>
+<title>403 Forbidden</title>
+</head><body>
+<h1>Forbidden</h1>
+<p>You don't have permission to access this resource.</p>
+</body></html>
+```
