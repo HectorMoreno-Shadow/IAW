@@ -93,11 +93,11 @@ RUN echo "Include conf/marca1-i.conf" >> /usr/local/apache2/conf/httpd.conf
 RUN echo "Include conf/marca2-p.conf" >> /usr/local/apache2/conf/httpd.conf
 ```
 
- Apache asigna como sitio por defecto el primer bloque <VirtualHost> que procesa en su configuración principal. El prefijo 00- se utiliza como convención de nombrado para indicar su prioridad.
+ Apache asigna como sitio por defecto el primer bloque <VirtualHost> que procesa en su configuración principal. El prefijo 00- se utiliza como convención de nombrado.
 
 ### 00-default.conf
 
-Para que capture cualquier dominio no reconocido o acceso por IP debemos de poner "default" dentro de "<Virtual host>"
+Uso ***_default_*** por claridad, pero lo que lo convierte en el por defecto es que se carga primero
 
 ```
 <VirtualHost _default_:80>
@@ -114,7 +114,7 @@ Para que capture cualquier dominio no reconocido o acceso por IP debemos de pone
 
 Con la regla  `<Location "/"> Require all denied </Location>` cualquier dominio desconocido que se pida mostrará el error "403 forbidden"
 
-## Archivo - marca1.conf y marca2.conf
+## Archivo - marca1-i.conf y marca2-p.conf
 
 ```
 <VirtualHost *:80>
@@ -136,6 +136,7 @@ Con la regla  `<Location "/"> Require all denied </Location>` cualquier dominio 
 ```
 <VirtualHost *:80>
     ServerName marca2-p.practica
+    ServerAlias www.marca2-p.practica
     DocumentRoot "/usr/local/apache2/htdocs/marca2"
 
     <Directory "/usr/local/apache2/htdocs/marca2">
