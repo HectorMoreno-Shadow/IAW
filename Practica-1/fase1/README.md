@@ -28,9 +28,9 @@ CMD ["httpd", "-D", "FOREGROUND"]
 
 `RUN echo "Include conf/00-default.conf" >> /usr/local/apache2/conf/httpd.conf`: Añade al final del archivo principal de Apache (`httpd.conf`) la directiva para incluir la regla por defecto.
 
-`RUN echo "Include conf/marca1.conf" >> /usr/local/apache2/conf/httpd.conf`: Vincula el archivo de **Marca 1** en el `httpd.conf` principal para que Apache reconozca el dominio `marca1-i.practica`.
+`RUN echo "Include conf/marca1-i.conf" >> /usr/local/apache2/conf/httpd.conf`: Vincula el archivo de **Marca 1** en el `httpd.conf` principal para que Apache reconozca el dominio `marca1-i.practica`.
 
-`RUN echo "Include conf/marca2.conf" >> /usr/local/apache2/conf/httpd.conf`: Vincula el archivo de **Marca 2** en el `httpd.conf` principal para que Apache reconozca el dominio `marca2-p.practica`.
+`RUN echo "Include conf/marca2-p.conf" >> /usr/local/apache2/conf/httpd.conf`: Vincula el archivo de **Marca 2** en el `httpd.conf` principal para que Apache reconozca el dominio `marca2-p.practica`.
 
 `EXPOSE 80`: El contenedor escuchará peticiones en el puerto HTTP estándar (puerto 80).
 
@@ -76,31 +76,6 @@ services:
 `restart: always` -> El contenedor se reiniciará siempre que se detenga (por un error, un reinicio del sistema o incluso si lo detienes tú manualmente con docker stop y luego reinicias el servicio de Docker)
 
 # VHOSTS
-
-## Archivo - 00-default.conf
-
-```
-<VirtualHost *:80>
-    ServerName default
-
-    <Location "/">
-        Require all denied
-    </Location>
-
-    ErrorLog "logs/default_error.log"
-    CustomLog "logs/default_access.log" combined
-</VirtualHost>
-```
-
-`<VirtualHost *:80>` -> Le dice a Apache que escuche las peticiones que lleguen por el puerto 80
-
-`ServerName default` -> Nombre interno al servidor virtual. En este caso es el default ya que actuará como la regla por defecto (ya que es el primer archivo que lee apache porque empieza por "00-") para cualquier dominio que no coincida con ***marca1-i.practica*** ni ***marca2-p.practica***
-
-`<Location "/">` -> Aplica la reglas que hay en su interior (en este caso "Require all denied") haciendo que si la ruta no coincide con ***marca1-i.practica*** o ***marca2-p.practica*** quedará bloqueado y aparecerá el error 403
-
-`ErrorLog "logs/default_error.log"` -> Archivo donde se guardarán los registros de fallos y errores
-
-`CustomLog "logs/default_access.log" combined` -> Archivo donde se registrarán las visitas y accesos con éxito/fracaso, usando ***combined***, que incluye todos los datos: IP del cliente, fecha/hora, etc.
 
 ## Dominio desconocido (por defecto)
 
