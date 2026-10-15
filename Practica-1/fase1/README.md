@@ -323,19 +323,19 @@ Content-Type: text/html; charset=iso-8859-1
 
 ```
 nginx/
-├── certs/   ->   clave y certificado
-└── conf.d/  ->   aquí irá la configuración del server (el paso 2)
+├── cert_clave/   ->   clave y certificado
+└── configuracion/  ->   aquí irá la configuración del server (el paso 2)
 ```
 ### Creamos la estructura
 
-`mkdir -p nginx/certs nginx/conf.d`
+`mkdir -p nginx/cert_clave nginx/configuracion`
 
 ## Generar el certificado
 
 ```
 openssl req -x509 -newkey ec -pkeyopt ec_paramgen_curve:prime256v1 -nodes \
-  -keyout nginx/certs/marca2-p.key \
-  -out nginx/certs/marca2-p.crt \
+  -keyout nginx/cert_clave/marca2-p.key \
+  -out nginx/cert_clave/marca2-p.crt \
   -days 365 \
   -subj "/CN=marca2-p.practica" \
   -addext "subjectAltName=DNS:marca2-p.practica,DNS:www.marca2-p.practica"
@@ -350,5 +350,16 @@ openssl req -x509 -newkey ec -pkeyopt ec_paramgen_curve:prime256v1 -nodes \
 
 Para verificar el certificado ponemos esto:
 
-`openssl x509 -in nginx/certs/marca2-p.crt -noout -text | grep -E "Subject:|Not After|Public Key Algorithm|ASN1 OID|NIST CURVE|DNS:"`
+`openssl x509 -in nginx/cert_clave/marca2-p.crt -noout -text | grep -E "Subject:|Not After|Public Key Algorithm|ASN1 OID|NIST CURVE|DNS:"`
 
+**Resultado:**
+
+```
+OID|NIST CURVE|DNS:"
+            Not After : Oct 15 11:20:58 2027 GMT
+        Subject: CN = marca2-p.practica
+            Public Key Algorithm: id-ecPublicKey
+                ASN1 OID: prime256v1
+                NIST CURVE: P-256
+                DNS:marca2-p.practica, DNS:www.marca2-p.practica
+```
