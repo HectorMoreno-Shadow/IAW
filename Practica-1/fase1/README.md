@@ -161,7 +161,7 @@ Con la regla  `<Location "/"> Require all denied </Location>` cualquier dominio 
 
 `CustomLog "logs/marca1_access.log" combined` -> Archivo donde se registrarán los accesos con éxito/fracaso usando el formato combined.
 
-`AllowOverride All` -> Esto hace que apache lea los archivos del directoria y así lea el archivo .htaccess
+`AllowOverride All` -> Esto hace que apache lea los archivos del directorio y así lea el archivo .htaccess
 
 ## Web_marca1_i - .htaccess
 
@@ -181,7 +181,7 @@ Esto es un archivo sensible simulado
 
 ## Comprobación con curl
 
-### Marca1-i.practtica
+### Marca1-i.practica
 
 `curl -i -H "Host: marca1-i.practica" http://localhost:8080/`
 
@@ -211,7 +211,7 @@ Content-Type: text/html
 </body>
 </html>
 ```
-### Marca2-p.practtica
+### Marca2-p.practica
 
 `curl -i -H "Host: marca2-p.practica" http://localhost:8080/`
 
@@ -241,7 +241,7 @@ Content-Type: text/html
 </body>
 </html>
 ```
-### wwww.marca1-i.practica (prueba del ServerAlias)
+### www.marca1-i.practica (prueba del ServerAlias)
 
 `curl -i -H "Host: www.marca1-i.practica" http://localhost:8080/`
 
@@ -316,3 +316,39 @@ Content-Type: text/html; charset=iso-8859-1
 <p>You don't have permission to access this resource.</p>
 </body></html>
 ```
+
+# Fase 2
+
+## Estructura
+
+```
+nginx/
+├── certs/   ->   clave y certificado
+└── conf.d/  ->   aquí irá la configuración del server (el paso 2)
+```
+### Creamos la estructura
+
+`mkdir -p nginx/certs nginx/conf.d`
+
+## Generar el certificado
+
+```
+openssl req -x509 -newkey ec -pkeyopt ec_paramgen_curve:prime256v1 -nodes \
+  -keyout nginx/certs/marca2-p.key \
+  -out nginx/certs/marca2-p.crt \
+  -days 365 \
+  -subj "/CN=marca2-p.practica" \
+  -addext "subjectAltName=DNS:marca2-p.practica,DNS:www.marca2-p.practica"
+```
+
+- `-newkey ec` con `prime256v1` genera la clave curva.
+- `-nodes` hace que la clave no tenga contraseña, para que Nginx arranque sin que nadie la teclee
+- `-x509` crea el certificado autofirmado, sin pasar po una CSR.
+- El `subjectAltName` es para los navegadores modernos, ya que ignoran el CN y validan solo contra el SAN.
+
+### Verificar el certificado
+
+Para verificar el certificado ponemos esto:
+
+`openssl x509 -in nginx/certs/marca2-p.crt -noout -text | grep -E "Subject:|Not After|Public Key Algorithm|ASN1 OID|NIST CURVE|DNS:"`
+
