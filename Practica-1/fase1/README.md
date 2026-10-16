@@ -319,14 +319,22 @@ Content-Type: text/html; charset=iso-8859-1
 
 # Fase 2
 
-## Estructura
+## Reutilización de la Fase 1
+
+La Fase 2 se construye sobre el Apache de la Fase 1, que pasa a ser el backend detrás de Nginx. Para que cada fase sea autocontenida (se puede arrancar desde cero sin depender de la otra), copié a `fase2/` los ficheros que necesita el Apache:
 
 ```
-nginx/
-├── cert_clave/   ->   clave y certificado
-└── configuracion/  ->   aquí irá la configuración del server (el paso 2)
+cp -r fase1/vhosts fase1/web_marca1_i fase1/web_marca2_p fase1/Dockerfile fase2/
 ```
-### Creamos la estructura
+
+- `Dockerfile` y `vhosts/`: construyen la imagen de Apache con los tres Virtual Hosts, sin cambios respecto a la Fase 1.
+- `web_marca1_i/` y `web_marca2_p/`: contenido de las dos marcas, incluido el `.htaccess` y `sensible.txt` de la marca interna.
+
+No copié el `docker-compose.yml` ni el `README.md` de la Fase 1, porque en esta fase el compose cambia.
+
+Además en fase 3 tengo que provocar un fallo del lado de Apache, si lo hago en fase 2, fase 1 sigue intacta como referencia de como funcionaba antes de romperlo.
+
+## Creamos la estructura en fase 2 (dentro de la carpeta fase2)
 
 `mkdir -p nginx/cert_clave nginx/configuracion`
 
@@ -362,4 +370,18 @@ OID|NIST CURVE|DNS:"
                 ASN1 OID: prime256v1
                 NIST CURVE: P-256
                 DNS:marca2-p.practica, DNS:www.marca2-p.practica
+```
+
+### Estructura resultante
+
+```
+fase2/
+├── Dockerfile
+├── docker-compose.yml
+├── vhosts/            (00-default.conf, marca1-i.conf, marca2-p.conf)
+├── web_marca1_i/      (.htaccess, index.html, sensible.txt)
+├── web_marca2_p/      (index.html)
+└── nginx/
+    ├── cert_clave/    (marca2-p.crt, marca2-p.key)
+    └── configuracion/ (nimbusdocs.conf)
 ```
