@@ -387,7 +387,6 @@ Para verificar el certificado ponemos esto:
 **Resultado:**
 
 ```
-OID|NIST CURVE|DNS:"
             Not After : Oct 15 11:20:58 2027 GMT
         Subject: CN = marca2-p.practica
             Public Key Algorithm: id-ecPublicKey
@@ -446,8 +445,59 @@ services:
 
 Creamos ***nimbusdocs.conf*** con ***listen 443 ssl***, el certicado y la clave, ***ssl_protocols TLSv1.2 TLSv1.3***,***ssl_ciphers*** solo con suites ***ECDHE-ECDSA*** y ***ssl_prefer_server_ciphers on***. Lo montamos en Nginx con el compose y ***nginx -t*** dio ***syntax is ok***
 
+### 4. Reenviar el host
 
+Al tener en el archivo ***nimbusdocs.conf***:
 
+```
+location / {
+        proxy_pass http://servidor_hector_apache:80;
+        # SIN proxy_set_header Host todavía
+    }
+}
+```
+
+Al hacer curl a ***marca-p.practica***, nos devolcerá un 403
+
+**Salida sin proxy_set_header línea:**
+
+```
+HTTP/1.1 403 Forbidden
+Server: nginx/1.30.6
+Date: Sun, 18 Oct 2026 14:16:08 GMT
+Content-Type: text/html; charset=iso-8859-1
+Content-Length: 239
+Connection: keep-alive
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html><head>
+<title>403 Forbidden</title>
+</head><body>
+<h1>Forbidden</h1>
+<p>You don't have permission to access this resource.</p>
+</body></html>
+```
+
+Añadimos el Host
+
+```
+server {
+    listen 443 ssl;
+    server_name marca2-p.practica www.marca2-p.practica marca1-i.practica www.marca1-i.practica;
+
+    ssl_certificate     /etc/nginx/certs/marca2-p.crt;
+    ssl_certificate_key /etc/nginx/certs/marca2-p.key;
+
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_ciphers ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-ECDSA-CHACHA20-POLY1305;
+    ssl_prefer_server_ciphers on;
+
+    location / {
+        proxy_pass http://servidor_hector_apache:80;
+        proxy_set_header Host $host;
+    }
+}
+```
 
 
 
