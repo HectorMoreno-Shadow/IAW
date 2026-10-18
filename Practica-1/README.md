@@ -362,7 +362,7 @@ Además en fase 3 tengo que provocar un fallo del lado de Apache, si lo hago en 
 
 `mkdir -p nginx/cert_clave nginx/configuracion`
 
-## Generar el certificado
+## 1. Generar el certificado
 
 ```
 openssl req -x509 -newkey ec -pkeyopt ec_paramgen_curve:prime256v1 -nodes \
@@ -395,6 +395,68 @@ OID|NIST CURVE|DNS:"
                 NIST CURVE: P-256
                 DNS:marca2-p.practica, DNS:www.marca2-p.practica
 ```
+
+## 2. Configurar bloque server
+
+### ninbusdocs.conf
+
+```
+server {
+    listen 443 ssl;
+    server_name marca2-p.practica www.marca2-p.practica marca1-i.practica www.marca1-i.practica;
+
+    ssl_certificate     /etc/nginx/certs/marca2-p.crt;
+    ssl_certificate_key /etc/nginx/certs/marca2-p.key;
+
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_ciphers ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-ECDSA-CHACHA20-POLY1305;
+    ssl_prefer_server_ciphers on;
+
+    location / {
+        proxy_pass http://servidor_hector_apache:80;
+        # SIN proxy_set_header Host todavía
+    }
+}
+```
+### docerk-compose.yml
+
+```
+services:
+  servidor_hector_apache:
+    build: .
+    container_name: contenedor_nimbusdocs
+    volumes:
+      - ./web_marca1_i:/usr/local/apache2/htdocs/marca1
+      - ./web_marca2_p:/usr/local/apache2/htdocs/marca2
+    restart: always
+
+  nginx-proxy:
+    image: nginx:stable
+    container_name: nginx_nimbusdocs
+    ports:
+      - "8119:80"
+      - "8120:443"
+    volumes:
+      - ./nginx/configuracion:/etc/nginx/conf.d:ro
+      - ./nginx/cert_clave:/etc/nginx/certs:ro
+    depends_on:
+      - servidor_hector_apache
+    restart: always
+```
+
+Creamos ***nimbusdocs.conf*** con ***listen 443 ssl***, el certicado y la clave, ***ssl_protocols TLSv1.2 TLSv1.3***,***ssl_ciphers*** solo con suites ***ECDHE-ECDSA*** y ***ssl_prefer_server_ciphers on***. Lo montamos en Nginx con el compose y ***nginx -t*** dio ***syntax is ok***
+
+
+
+
+
+
+
+
+
+
+
+
 
 ### Estructura resultante
 

@@ -1,0 +1,21 @@
+services:
+  servidor_hector_apache:
+    build: .
+    container_name: contenedor_nimbusdocs
+    volumes:
+      - ./web_marca1_i:/usr/local/apache2/htdocs/marca1
+      - ./web_marca2_p:/usr/local/apache2/htdocs/marca2
+    restart: always
+
+  nginx-proxy:
+    image: nginx:stable
+    container_name: nginx_nimbusdocs
+    ports:
+      - "8119:80"
+      - "8120:443"
+    volumes:
+      - ./nginx/configuracion:/etc/nginx/conf.d:ro
+      - ./nginx/cert_clave:/etc/nginx/certs:ro
+    depends_on:
+      - servidor_hector_apache
+    restart: always
