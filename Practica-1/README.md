@@ -644,8 +644,73 @@ Salida:
 New, TLSv1.3, Cipher is TLS_AES_256_GCM_SHA384
 ```
 
+# Fase 2 - Seguridad y Límite de peticiones
+
+En nimbusdocs.conf, dentro del server del puerto 443, añadimos esto:
+
+limit_req_zone $binary_remote_addr zone=nimbus_limite:10m rate=3r/s;
+
+server {
+    listen 80;
+    server_name _;
+
+    return 301 https://$host:8120$request_uri;
+}
+
+server {
+    listen 443 ssl;
+    server_name marca2-p.practica www.marca2-p.practica marca1-i.practica www.marca1-i.practica;
+
+    ssl_certificate     /etc/nginx/certs/marca2-p.crt;
+    ssl_certificate_key /etc/nginx/certs/marca2-p.key;
+
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_ciphers ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-ECDSA-CHACHA20-POLY1305;
+    ssl_prefer_server_ciphers on;
+
+    add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header X-Frame-Options "DENY" always;
+
+    location / {
+        limit_req zone=nimbus_limite burst=6 nodelay;
+        limit_req_status 429;
+
+        proxy_pass http://servidor_hector_apache:80;
+        proxy_set_header Host $host;
+    }
+}
 
 
+# Fase 3: diagnóstico provocado
+
+## Fallo 1: Apache (orden de los Include)
+
+**Cambio realizado:** en el `Dockerfile` moví la línea `Include conf/00-default.conf` desde la primera posición a la última, de modo que el orden de carga pasó a ser `marca1-i.conf`, `marca2-p.conf` y `00-default.conf`.
+
+| Síntoma observado | Hipótesis inicial | Comando de diagnóstico usado | Causa real y solución |
+|---|---|---|---|
+| Al pedir un dominio que no existe (`otro.dominio`) o al acceder por IP, la respuesta es un `200` con la web de la marca 1 en lugar del `403` que devolvía antes. | Pensé que Nginx estaba reenviando mal la cabecera `Host`, o que el vhost `00-default.conf` no se había cargado. | `docker exec contenedor_nimbusdocs httpd -S` y `tail` de `marca1_access.log` y `default_access.log` (salidas debajo). | Apache usa como vhost por defecto el primero que carga para esa dirección y puerto. Al mover el `Include` de `00-default.conf` al final, el primero pasó a ser `marca1-i.conf`, y cualquier petición que no coincide con un `ServerName` o `ServerAlias` cae en la marca interna. **Solución:** restaurar el orden de los `Include` con `00-default.conf` primero y reconstruir la imagen con `docker compose up -d --build`. |
+
+**Dockerfile antes (correcto):**
+
+```
+RUN echo "Include conf/00-default.conf" >> /usr/local/apache2/conf/httpd.conf
+RUN echo "Include conf/marca1-i.conf" >> /usr/local/apache2/conf/httpd.conf
+RUN echo "Include conf/marca2-p.conf" >> /usr/local/apache2/conf/httpd.conf
+```
+
+**Dockerfile después (roto):**
+
+```
+RUN echo "Include conf/marca1-i.conf" >> /usr/local/apache2/conf/httpd.conf
+RUN echo "Include conf/marca2-p.conf" >> /usr/local/apache2/conf/httpd.conf
+RUN echo "Include conf/00-default.conf" >> /usr/local/apache2/conf/httpd.conf
+```
+
+### Qué enseña este fallo
+
+El prefijo `00-` del nombre del fichero no decide por sí solo cuál es el vhost por defecto. En mi montaje manda el **orden de los `Include`** en el `httpd.conf`. El prefijo solo ordenaría si usara un `Include` con comodín (por ejemplo `conf/vhosts/*.conf`), que Apache carga por orden alfabético.
 
 
 
