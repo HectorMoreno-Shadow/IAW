@@ -509,6 +509,7 @@ Elegí **301 Moved Permanently** por dos motivos:
 - **Permanente y no temporal:** pasar a HTTPS es la configuración definitiva del portal, no algo provisional. Eso descarta 302 y 307, que son temporales y no deberían cachearse.
 - **301 y no 308:** el portal es de documentación y se consulta casi siempre con GET. El 301 es el estándar más compatible para este caso. El 308 se distingue en que garantiza que se conservan el método y el cuerpo, lo que importaría con formularios o peticiones POST/PUT, y aquí no los hay.
 
+
 ## 4. Reenviar el host
 
 Al tener en el archivo ***nimbusdocs.conf***:
@@ -621,6 +622,26 @@ Accept-Ranges: bytes
     <h1>Esta es la web marca 1</h1>
 
 </body>
+```
+
+## 5 Verificar con openssl_client
+
+`openssl s_client -connect localhost:8120 -servername marca2-p.practica -tls1_2 </dev/null 2>/dev/null | grep -E "Protocol|Cipher"`
+
+Salida:
+
+```
+New, TLSv1.2, Cipher is ECDHE-ECDSA-AES256-GCM-SHA384
+    Protocol  : TLSv1.2
+    Cipher    : ECDHE-ECDSA-AES256-GCM-SHA384
+```
+
+`openssl s_client -connect localhost:8120 -servername marca2-p.practica -tls1_3 </dev/null 2>/dev/null | grep -E "Protocol|Cipher"`
+
+Salida:
+
+```
+New, TLSv1.3, Cipher is TLS_AES_256_GCM_SHA384
 ```
 
 
