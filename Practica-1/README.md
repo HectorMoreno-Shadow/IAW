@@ -343,6 +343,22 @@ Content-Type: text/html; charset=iso-8859-1
 
 # Fase 2
 
+Elegí el CN `marca2-p.practica` porque es la marca pública, la que recibe tráfico de clientes externos y por tanto la que más necesita presentarse con un certificado TLS.
+
+### Estructura:
+
+```
+fase2/
+├── Dockerfile
+├── docker-compose.yml
+├── vhosts/            (00-default.conf, marca1-i.conf, marca2-p.conf)
+├── web_marca1_i/      (.htaccess, index.html, sensible.txt)
+├── web_marca2_p/      (index.html)
+└── nginx/
+    ├── cert_clave/    (marca2-p.crt, marca2-p.key)
+    └── configuracion/ (nimbusdocs.conf)
+```
+
 ## Reutilización de la Fase 1
 
 La Fase 2 se construye sobre el Apache de la Fase 1, que pasa a ser el backend detrás de Nginx. Para que cada fase sea autocontenida (se puede arrancar desde cero sin depender de la otra), copié a `fase2/` los ficheros que necesita el Apache:
@@ -445,7 +461,55 @@ services:
 
 Creamos ***nimbusdocs.conf*** con ***listen 443 ssl***, el certicado y la clave, ***ssl_protocols TLSv1.2 TLSv1.3***,***ssl_ciphers*** solo con suites ***ECDHE-ECDSA*** y ***ssl_prefer_server_ciphers on***. Lo montamos en Nginx con el compose y ***nginx -t*** dio ***syntax is ok***
 
-### 4. Reenviar el host
+
+### Cipher suite elegido
+
+Solo uso suites `ECDHE-ECDSA`, por estas razones:
+
+- **ECDSA:** mi certificado es de curva elíptica (P-256). Las suites `ECDHE-RSA` necesitan un certificado RSA, así que no servirían de nada con este.
+- **ECDHE:** el intercambio de claves es efímero, lo que da *forward secrecy*. Si se filtrara la clave privada del servidor, no se podrían descifrar sesiones grabadas antes.
+- **AES-GCM y ChaCha20-Poly1305:** son cifrados AEAD, que cifran y autentican a la vez. Quedan fuera los modos CBC, por los ataques de tipo padding oracle. ChaCha20 rinde mejor en dispositivos sin aceleración AES por hardware.
+
+`ssl_ciphers` solo afecta a TLS 1.2. En TLS 1.3 las suites son un conjunto fijo y todas son seguras, así que no se configuran aquí.
+
+## 3. Redirigir HTTP a HTTPS
+
+Añadimos este bloque al numbusdocs.conf:
+
+```
+server {
+    listen 443 ssl;
+    server_name marca2-p.practica www.marca2-p.practica marca1-i.practica www.marca1-i.practica;
+
+    ssl_certificate     /etc/nginx/certs/marca2-p.crt;
+    ssl_certificate_key /etc/nginx/certs/marca2-p.key;
+
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_ciphers ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-ECDSA-CHACHA20-POLY1305;
+    ssl_prefer_server_ciphers on;
+
+    location / {
+        proxy_pass http://servidor_hector_apache:80;
+        proxy_set_header Host $host;
+    }
+}
+
+server {
+    listen 80;
+    server_name _;
+
+    return 301 https://$host:8120$request_uri;
+}
+```
+
+### Por qué 301
+
+Elegí **301 Moved Permanently** por dos motivos:
+
+- **Permanente y no temporal:** pasar a HTTPS es la configuración definitiva del portal, no algo provisional. Eso descarta 302 y 307, que son temporales y no deberían cachearse.
+- **301 y no 308:** el portal es de documentación y se consulta casi siempre con GET. El 301 es el estándar más compatible para este caso. El 308 se distingue en que garantiza que se conservan el método y el cuerpo, lo que importaría con formularios o peticiones POST/PUT, y aquí no los hay.
+
+## 4. Reenviar el host
 
 Al tener en el archivo ***nimbusdocs.conf***:
 
@@ -478,7 +542,7 @@ Connection: keep-alive
 </body></html>
 ```
 
-Añadimos el Host
+**Añadimos el Host:**
 
 ```
 server {
@@ -499,29 +563,69 @@ server {
 }
 ```
 
+**Recargamos y probamos:**
 
+`curl -ik --resolve marca2-p.practica:8120:127.0.0.1 https://marca2-p.practica:8120/`
 
-
-
-
-
-
-
-
-### Estructura resultante
+Resultado:
 
 ```
-fase2/
-├── Dockerfile
-├── docker-compose.yml
-├── vhosts/            (00-default.conf, marca1-i.conf, marca2-p.conf)
-├── web_marca1_i/      (.htaccess, index.html, sensible.txt)
-├── web_marca2_p/      (index.html)
-└── nginx/
-    ├── cert_clave/    (marca2-p.crt, marca2-p.key)
-    └── configuracion/ (nimbusdocs.conf)
+HTTP/1.1 200 OK
+Server: nginx/1.30.6
+Date: Sun, 18 Oct 2026 14:49:15 GMT
+Content-Type: text/html
+Content-Length: 241
+Connection: keep-alive
+Last-Modified: Fri, 16 Oct 2026 10:56:33 GMT
+ETag: "f1-65df3047703e2"
+Accept-Ranges: bytes
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Marca 2</title>
+</head>
+<body>
+
+    <h1>Esta es la web marca 2</h1>
+    
+</body>
 ```
 
-# Fase 3
+`curl -ik --resolve marca1-i.practica:8120:127.0.0.1 https://marca1-i.practica:8120/`
 
-En esta fase tengo que provocar un fallo del lado de Apache. Lo haré sobre un copia en ***fase3/***, de modo que ***fase2/*** siga siendo la referencia de cómo funcionaba antes de romperlo.
+Resultado:
+
+```
+HTTP/1.1 200 OK
+Server: nginx/1.30.6
+Date: Sun, 18 Oct 2026 14:50:19 GMT
+Content-Type: text/html
+Content-Length: 241
+Connection: keep-alive
+Last-Modified: Fri, 16 Oct 2026 10:56:33 GMT
+ETag: "f1-65df304770054"
+Accept-Ranges: bytes
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Marca 1</title>
+</head>
+<body>
+    
+    <h1>Esta es la web marca 1</h1>
+
+</body>
+```
+
+
+
+
+
+
+
