@@ -1,2 +1,1 @@
 # IAW
-## Índice de prácticas
