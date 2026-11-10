@@ -3,7 +3,7 @@
 1.a = 404
 1.b = 502
 1.c = 405
-1.d = 500
+1.d = 502
 # Bloque 4 · Responde: sí o no.
 4.a =
 4.b =
