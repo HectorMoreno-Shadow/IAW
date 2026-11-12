@@ -65,6 +65,15 @@ def podcasts():
 #         - Solo GET: con cualquier otro método, 405 (eso lo hace Flask solo, si la ruta está bien declarada).
 #         - /api/podcasts/abc (no es un número) también es un 404.
 
+@app.route("/api/podcasts/<int:id>", methods=["GET"])
+
+
+
+
+
+
+
+
 
 @app.route("/api/entrar", methods=["POST"])
 def entrar():
