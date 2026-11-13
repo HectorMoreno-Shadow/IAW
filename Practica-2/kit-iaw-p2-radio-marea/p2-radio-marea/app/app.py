@@ -66,8 +66,16 @@ def podcasts():
 #         - /api/podcasts/abc (no es un número) también es un 404.
 
 @app.route("/api/podcasts/<int:id>", methods=["GET"])
+def api_podcast(id):
+    podcast = None
 
+    for p in leer_podcasts():
+        if p["id"] == id:
+            podcast = p
 
+    if podcast is None:
+        return jsonify({"error": "No existe ese podcast"}), 404
+    return jsonify(podcast)
 
 
 
