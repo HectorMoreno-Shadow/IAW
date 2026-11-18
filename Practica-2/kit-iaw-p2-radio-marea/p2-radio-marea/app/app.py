@@ -26,6 +26,11 @@ PODCASTS_DE_PRUEBA = [
 # ✍️ C2 · La conexión con MariaDB (UD6, apartado 5.2): host, base, usuario y contraseña, del entorno (radio.env).
 #         Cada fila, un diccionario. Nada escrito a mano.
 def conectar():
+    return pymysql.connect(
+        user=os.environ["DB_USER"], password=os.environ["DB_PASS"],
+        host=os.environ["DB_HOST"], database=os.environ["DB_NAME"],
+        charset="utf8mb4", cursorclass=pymysql.cursors.DictCursor,   # cada fila, un diccionario
+    )
     raise RuntimeError("Sin hacer: conectar() (C2)")
 
 
